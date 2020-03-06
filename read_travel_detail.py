@@ -1,6 +1,6 @@
 from crawler import *
 from urllib.parse import urlparse
-import datetime
+import sys
 
 ezTravel_root = "https://vacation.eztravel.com.tw/"
 
@@ -73,10 +73,18 @@ def get_travel_detail(url):
 
 
 if __name__ == '__main__':
+
+    # args = sys.argv
+    if len(sys.argv) !=3 :
+        raise Exception("argument error.")
+
     create_folder("./queue")
+    code_list = read_from_json('./data/travel_code_list.json')
 
-    code_list = read_from_json('./travel_code_list.json')
-    trip_detail_links = get_travel_list(code_list[1]["travel_code"], "20200305", "20200305")
-
-    # get_travel_detail("https://vacation.eztravel.com.tw/pkgfrn/introduction/VDR0000001913/HKD05BR200307W")
-    # sleep_test()
+    for code in code_list:
+        try:
+            trip_detail_links = get_travel_list(code["travel_code"], sys.argv[1], sys.argv[2])
+        except:
+            print("Got error. params: %s %s %s" %(code["travel_code"], sys.argv[1], sys.argv[2]))
+            pass
+        # trip_detail_links = get_travel_list(code["travel_code"], "20200305", "20200305")
