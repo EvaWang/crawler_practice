@@ -2,6 +2,7 @@ from crawler import *
 from db_helper import *
 import re
 from datetime import datetime, timedelta
+import sys, traceback
 
 url_root = 'https://vacation.eztravel.com.tw'
 
@@ -51,10 +52,16 @@ def shit_days(start_string, diff):
     
 if __name__ == '__main__':  
 
-    init_database()
+    queue_number = ""
 
-    file_folder = "./queue"
+    if len(sys.argv) == 2:
+        queue_number = sys.argv[1]
+
+    init_database()
+    file_folder = "./queue%s"%queue_number
     links, filename = read_links_from_json(file_folder)
+    print("target filename: %s" %filename)
+
     trip_detail_list = []
 
     # for test
