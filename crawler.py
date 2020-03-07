@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # import libraries
 import pandas as pd
 import requests
@@ -36,9 +38,9 @@ def save2json(filename, target_data):
     pass
 
 def get_web_content(url, sleep=True):
-    fake_headers = {'user-agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36'}
+    # fake_headers = {'user-agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36'}
     # GET request from url and parse via BeautifulSoup
-    r = requests.get(url, fake_headers)
+    r = requests.get(url)
     # 擷取request回傳的文字部分
     web_content = r.text
 

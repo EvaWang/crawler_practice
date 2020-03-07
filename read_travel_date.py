@@ -1,34 +1,21 @@
 from crawler import *
+from db_helper import *
 import re
 from datetime import datetime, timedelta
 
 url_root = 'https://vacation.eztravel.com.tw'
 
-def get_travel_code():
-    root_content = get_web_content(url_root)
-    root_soup = BeautifulSoup(root_content,'lxml')
-
-    # 找出所有travel code
-    code_list = []
-    trip_code_list = root_soup.find_all('li', attrs = {"data-traveltype": "A1"})
-    for trip_code in trip_code_list:
-        code_val = trip_code.get('data-travelcode',None)
-        if code_val is None: continue
-        
-        code_list.append({
-            "travel_code": code_val,
-            "travel_code_name": str(trip_code.string),
-            })
-    return code_list
-
 def get_travel_date(link_path):
-    content = get_web_content(url_root+link_path)
+    target_url = link_path
+    if link_path.startswith("http") == False:
+        target_url = url_root+link_path
+    content = get_web_content(target_url)
     soup = BeautifulSoup(content,'lxml')
 
     trip_title = soup.find('h1')
-    # print(trip_detail)
     trip_detail = {}
-
+    trip_detail["product_key"] = link_path.split('/')[3]
+    # print(trip_detail)
 
     trip_contents = soup.find('div', class_ = 'product-info css-td').text.split('\n')
     for line in trip_contents:
@@ -64,6 +51,8 @@ def shit_days(start_string, diff):
     
 if __name__ == '__main__':  
 
+    init_database()
+
     file_folder = "./queue"
     links, filename = read_links_from_json(file_folder)
     trip_detail_list = []
@@ -78,7 +67,6 @@ if __name__ == '__main__':
         trip_detail["title"] = data["title"]
         trip_detail["price"] = data["price"]
         trip_detail["travel_code"] = data["travel_code"]
-        print(trip_detail)
         trip_detail_list.append(trip_detail)
 
         # trip_detail sample: ({'start_date': datetime.date(2020, 3, 5), 'end_date': datetime.date(2020, 3, 9), 'lower_bound': 16, 'upper_bound': 26}, '/pkgfrn/otherDate/VDR0000010446/DTS19-KIX48')
@@ -93,17 +81,22 @@ if __name__ == '__main__':
             date_range = calc_dateString_range(trip_detail["start_date"], trip_detail["end_date"])
             end_date = str(shit_days(start_date, date_range))
 
-            other_date_detail = {}
-            other_date_detail["title"] = trip_detail["title"]
-            other_date_detail["price"] = int(other_date["price"])
-            other_date_detail["travel_code"] = trip_detail["travel_code"]
-            other_date_detail["lower_bound"] = trip_detail["lower_bound"]
-            other_date_detail["upper_bound"] = trip_detail["upper_bound"]
-            other_date_detail["start_date"] = start_date
-            other_date_detail["end_date"] = end_date
+            other_date_detail = (
+                trip_detail["title"], 
+                trip_detail["travel_code"],
+                trip_detail["product_key"], 
+                int(other_date["price"]),
+                start_date,
+                end_date,
+                trip_detail["lower_bound"],
+                trip_detail["upper_bound"]
+                )
+
+            # print(other_date_detail)
             trip_detail_list.append(other_date_detail)
 
-        # print(trip_detail_list)
-    
-    save2json(filename, trip_detail_list)
+    # print(trip_detail_list)
+
+    save2EzTravel_db(trip_detail_list)
+    # save2json(filename, trip_detail_list)
     mission_done(file_folder, filename)
