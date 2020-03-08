@@ -136,4 +136,9 @@ dmypy.json
 
 # this project
 queue/
+queue2/
+queue3/
 done/
+data/
+
+*.sqlite

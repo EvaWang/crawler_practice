@@ -15,7 +15,8 @@ def get_travel_date(link_path):
 
     trip_title = soup.find('h1')
     trip_detail = {}
-    trip_detail["product_key"] = link_path.split('/')[3]
+    link_path = link_path.split("/introduction/")
+    trip_detail["product_key"] = link_path[1].split('/')[0]
     # print(trip_detail)
 
     trip_contents = soup.find('div', class_ = 'product-info css-td').text.split('\n')
@@ -70,10 +71,16 @@ if __name__ == '__main__':
 
     for data in links:
         travel_date_info = get_travel_date(data["link"])
-        trip_detail = travel_date_info[0]
-        trip_detail["title"] = data["title"]
-        trip_detail["price"] = data["price"]
-        trip_detail["travel_code"] = data["travel_code"]
+        trip_detail = (
+                data["title"], 
+                data["travel_code"],
+                travel_date_info[0]["product_key"], 
+                int(data["price"]),
+                travel_date_info[0]["start_date"],
+                travel_date_info[0]["end_date"],
+                travel_date_info[0]["lower_bound"],
+                travel_date_info[0]["upper_bound"]
+                )
         trip_detail_list.append(trip_detail)
 
         # trip_detail sample: ({'start_date': datetime.date(2020, 3, 5), 'end_date': datetime.date(2020, 3, 9), 'lower_bound': 16, 'upper_bound': 26}, '/pkgfrn/otherDate/VDR0000010446/DTS19-KIX48')
@@ -83,20 +90,19 @@ if __name__ == '__main__':
 
         for other_date in other_date_list:
             start_date = other_date["date"]
-            # start_date = datetime.strptime(other_date["date"], '%Y-%m-%d').date()
-            if start_date == trip_detail["start_date"]: continue
-            date_range = calc_dateString_range(trip_detail["start_date"], trip_detail["end_date"])
+            if start_date == trip_detail[4]: continue
+            date_range = calc_dateString_range(trip_detail[4], trip_detail[5])
             end_date = str(shit_days(start_date, date_range))
 
             other_date_detail = (
-                trip_detail["title"], 
-                trip_detail["travel_code"],
-                trip_detail["product_key"], 
+                trip_detail[0], 
+                trip_detail[1],
+                trip_detail[2], 
                 int(other_date["price"]),
                 start_date,
                 end_date,
-                trip_detail["lower_bound"],
-                trip_detail["upper_bound"]
+                trip_detail[6],
+                trip_detail[7]
                 )
 
             # print(other_date_detail)
